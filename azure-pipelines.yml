@@ -5,7 +5,7 @@ resources:
     - repository: PipelineScripts
       type: git
       name: Platform/PipelineScripts
-      ref: refs/heads/develop
+      ref: refs/heads/image_scan
 
 pool:
   vmImage: ubuntu-latest
@@ -17,27 +17,11 @@ variables:
   value: 'ACR_RW1APPCONTAINERS'
 
 steps:
-- task: Docker@2
-  displayName: 'Build docker image'
-  retryCountOnTaskFailure: 3
-  inputs:
-    containerRegistry: '$(containerRegistry)'
-    repository: '$(imageName)'
-    command: 'build'
-    Dockerfile: 'Dockerfile'
-    tags: '$(Build.BuildId)'
-    addBaseImageData: false
-
-- template: templates/steps/trivy_scan.yml@PipelineScripts
+- template: templates/jobs/build_base-docker-image.yml@PipelineScripts
   parameters:
-    image_name: '$(imageName)'
-    docker_registry_name: rw1appcontainers.azurecr.io
+    acr_connection_name: '$(containerRegistry)'
     trivy_acr_connection_name: '$(containerRegistry)'
-
-- task: Docker@2
-  displayName: 'Push docker image'
-  inputs:
-    containerRegistry: '$(containerRegistry)'
-    repository: '$(imageName)'
-    command: 'push'
-    tags: '$(Build.BuildId)'
+    image_name: '$(imageName)'
+    dockerfile: 'Dockerfile'
+    skipSonarScan: true
+    skipDepTrackScan: true
