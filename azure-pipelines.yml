@@ -16,13 +16,18 @@ variables:
 - name: containerRegistry
   value: 'ACR_RW1APPCONTAINERS'
 
-jobs:
-- template: templates/jobs/build_base-docker-image.yml@PipelineScripts
-  parameters:
-    acr_connection_name: '$(containerRegistry)'
-    trivy_acr_connection_name: '$(containerRegistry)'
-    image_name: '$(imageName)'
-    dockerfile: 'Dockerfile'
-    skipSonarScan: true
-    skipDepTrackScan: true
-    multistageBuilds: false
+stages:
+  - stage: Build_base
+    displayName: Build base Image
+    jobs:
+    - template: templates/jobs/build_base-docker-image.yml@PipelineScripts
+      parameters:
+        acr_connection_name: '$(containerRegistry)'
+        trivy_acr_connection_name: '$(containerRegistry)'
+        image_name: '$(imageName)'
+        dockerfile: 'Dockerfile'
+        skipSonarScan: true
+        skipDepTrackScan: true
+        multistageBuilds: false
+
+  - template: pipelines/livekit-signal-proxy-cd.yml@PipelineScripts
