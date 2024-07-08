@@ -25,3 +25,4 @@ jobs:
     dockerfile: 'Dockerfile'
     skipSonarScan: true
     skipDepTrackScan: true
+    multistageBuilds: false
