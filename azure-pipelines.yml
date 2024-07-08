@@ -3,8 +3,14 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-trigger:
-- main
+trigger: none
+
+resources:
+  repositories:
+    - repository: PipelineScripts
+      type: git
+      name: Platform/PipelineScripts
+      ref: refs/heads/develop
 
 pool:
   vmImage: ubuntu-latest
