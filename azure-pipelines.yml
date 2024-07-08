@@ -16,7 +16,7 @@ variables:
 - name: containerRegistry
   value: 'ACR_RW1APPCONTAINERS'
 
-steps:
+jobs:
 - template: templates/jobs/build_base-docker-image.yml@PipelineScripts
   parameters:
     acr_connection_name: '$(containerRegistry)'
