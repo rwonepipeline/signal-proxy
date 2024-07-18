@@ -5,7 +5,7 @@ resources:
     - repository: PipelineScripts
       type: git
       name: Platform/PipelineScripts
-      ref: refs/heads/image_scan
+      ref: refs/heads/PLT-14216_coturn_secret_configure
 
 pool:
   vmImage: ubuntu-latest
