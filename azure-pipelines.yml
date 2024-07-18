@@ -7,6 +7,12 @@ resources:
       name: Platform/PipelineScripts
       ref: refs/heads/PLT-14216_coturn_secret_configure
 
+parameters:
+  - name: BaseImage
+    displayName: Base image version if not current
+    type: string
+    default: 'current'
+
 pool:
   vmImage: ubuntu-latest
 
@@ -15,6 +21,11 @@ variables:
   value: livekit-signal-proxy
 - name: containerRegistry
   value: 'ACR_RW1APPCONTAINERS'
+- name: BaseImage
+  ${{ if eq( parameters.BaseImage, 'current' ) }}:
+    value: $(Build.BuildId)
+  ${{ if ne( parameters.BaseImage, 'current' ) }}:
+    value: ${{ parameters.BaseImage }}
 
 stages:
   - stage: Build_base
@@ -25,9 +36,12 @@ stages:
         acr_connection_name: '$(containerRegistry)'
         trivy_acr_connection_name: '$(containerRegistry)'
         image_name: '$(imageName)'
+        BaseImage: ${{ parameters.BaseImage }}
         dockerfile: 'Dockerfile'
         skipSonarScan: true
         skipDepTrackScan: true
         multistageBuilds: false
 
   - template: pipelines/livekit-signal-proxy-cd.yml@PipelineScripts
+    parameters:
+      BaseImage: $(BaseImage)
