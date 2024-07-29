@@ -15,6 +15,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -49,6 +50,14 @@ func NewConnection(
 		})
 	}
 
+	// Log the new ICE servers
+	iceServersJSON, err := json.MarshalIndent(newIceServers, "", "  ")
+	if err != nil {
+		log.Printf("Error marshaling ICE servers: %v", err)
+	} else {
+		log.Printf("New ICE Servers:\n%s", string(iceServersJSON))
+	}
+
 	return &Connection{
 		writer:                writer,
 		request:               request,
@@ -58,6 +67,10 @@ func NewConnection(
 }
 
 func (c *Connection) Run() error {
+	// Log the client's IP address
+	clientIP := c.request.RemoteAddr
+	log.Printf("New client connection from IP: %s", clientIP)
+
 	conn, err := upgrader.Upgrade(c.writer, c.request, nil)
 	if err != nil {
 		return err
@@ -100,6 +113,10 @@ func (c *Connection) Run() error {
 		return fmt.Errorf("error connecting to destination: %w", destErr)
 	}
 	defer destConn.Close()
+
+	// Log the destination LiveKit server's IP address
+	destIP := destConn.RemoteAddr().String()
+	log.Printf("Connected to destination LiveKit server at IP: %s", destIP)
 
 	go c.copyMessages(destConn, conn)
 	c.copyServerMessages(conn, destConn)
