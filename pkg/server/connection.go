@@ -50,14 +50,6 @@ func NewConnection(
 		})
 	}
 
-	// Log the new ICE servers
-	iceServersJSON, err := json.MarshalIndent(newIceServers, "", "  ")
-	if err != nil {
-		log.Printf("Error marshaling ICE servers: %v", err)
-	} else {
-		log.Printf("New ICE Servers:\n%s", string(iceServersJSON))
-	}
-
 	return &Connection{
 		writer:                writer,
 		request:               request,
@@ -164,7 +156,7 @@ func (c *Connection) modifyServerMessage(msg []byte) ([]byte, error) {
 	if join := signalResponse.GetJoin(); join != nil {
 		logICEServers(join.IceServers, "Original")
 		join.IceServers = c.rewriteIceServers
-		
+
 		logICEServers(join.IceServers, "Modified")
 		updated = true
 	} else if reconnect := signalResponse.GetReconnect(); reconnect != nil {
