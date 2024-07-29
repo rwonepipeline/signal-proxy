@@ -151,9 +151,21 @@ func (c *Connection) modifyServerMessage(msg []byte) ([]byte, error) {
 		return nil, fmt.Errorf("failed to unmarshal SignalResponse message: %w", err)
 	}
 
+
+	logICEServers := func(iceServers []*livekit.ICEServer, prefix string) {
+		iceServersJSON, err := json.MarshalIndent(iceServers, "", "  ")
+		if err != nil {
+			log.Printf("Error marshaling %s ICE servers: %v", prefix, err)
+		} else {
+			log.Printf("%s ICE Servers:\n%s", prefix, string(iceServersJSON))
+		}
+	}
 	updated := false
 	if join := signalResponse.GetJoin(); join != nil {
+		logICEServers(join.IceServers, "Original")
 		join.IceServers = c.rewriteIceServers
+		
+		logICEServers(join.IceServers, "Modified")
 		updated = true
 	} else if reconnect := signalResponse.GetReconnect(); reconnect != nil {
 		reconnect.IceServers = c.rewriteIceServers
