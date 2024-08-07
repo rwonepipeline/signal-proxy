@@ -1,0 +1,47 @@
+trigger: none
+
+resources:
+  repositories:
+    - repository: PipelineScripts
+      type: git
+      name: Platform/PipelineScripts
+      ref: refs/heads/develop
+
+parameters:
+  - name: BaseImage
+    displayName: Base image version if not current
+    type: string
+    default: 'current'
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- name: imageName
+  value: livekit-signal-proxy
+- name: containerRegistry
+  value: 'ACR_RW1APPCONTAINERS'
+- name: BaseImage
+  ${{ if eq( parameters.BaseImage, 'current' ) }}:
+    value: $(Build.BuildId)
+  ${{ if ne( parameters.BaseImage, 'current' ) }}:
+    value: ${{ parameters.BaseImage }}
+
+stages:
+  - stage: Build_base
+    displayName: Build base Image
+    jobs:
+    - template: templates/jobs/build_base-docker-image.yml@PipelineScripts
+      parameters:
+        acr_connection_name: '$(containerRegistry)'
+        trivy_acr_connection_name: '$(containerRegistry)'
+        image_name: '$(imageName)'
+        BaseImage: ${{ parameters.BaseImage }}
+        dockerfile: 'Dockerfile'
+        skipSonarScan: true
+        skipDepTrackScan: true
+        multistageBuilds: false
+
+  - template: pipelines/livekit-signal-proxy-cd.yml@PipelineScripts
+    parameters:
+      BaseImage: $(BaseImage)
